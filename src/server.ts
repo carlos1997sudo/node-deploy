@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import fastify from "fastify";
-const app = fastify();
-const prisma = new PrismaClient();
+import { z } from "zod";
 
-import z from "zod";
+const prisma = new PrismaClient();
+const app = fastify();
 
 app.get("/users", async () => {
   const users = await prisma.user.findMany();
@@ -11,12 +11,12 @@ app.get("/users", async () => {
 });
 
 app.post("/users", async (request, reply) => {
-  const createuserSchema = z.object({
+  const createUserSchema = z.object({
     name: z.string(),
     email: z.string().email(),
   });
 
-  const { name, email } = createuserSchema.parse(request.body);
+  const { name, email } = createUserSchema.parse(request.body);
   await prisma.user.create({
     data: {
       name,
@@ -27,10 +27,11 @@ app.post("/users", async (request, reply) => {
   return reply.status(201).send();
 });
 
-
-app.listen({
+app
+  .listen({
     host: "0.0.0.0",
     port: process.env.PORT ? Number(process.env.PORT) : 3333,
-}).then(()=> {
+  })
+  .then(() => {
     console.log(`HTTP Server Running`);
-});
+  });
